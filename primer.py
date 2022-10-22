@@ -2,87 +2,78 @@
 # _*_ coding: utf-8 _*_
 
 import sys
-import datetime
+from datetime import date
 
 
-def get_human():
+def get_worker():
     """""
-    Запросить данные о человеке.
+    Запросить данные о работнике.
     """""
-    # Запросить данные о человеке.
-    surname = input("Фамилия: ")
-    name = input("Имя: ")
-    zodiak = input("Знак Зодиака: ")
-    date_str = input("Введите дату выпуска (dd/mm/yyyy)\n")
-    date = datetime.datetime.strptime(date_str, '%d/%m/%Y').date()
+    name = input("Фамилия и инициалы: ")
+    post = input("Должность: ")
+    year = int(input("Год поступления: "))
 
-    # Вернуть словарь.
+    # Создать словарь
     return {
-        'surname': surname,
         'name': name,
-        'zodiak': zodiak,
-        'date': date
+        'post': post,
+        'year': year,
     }
 
 
-def display_human(humans):
+def display_worker(staff):
     """""
-    Отобразить список людей
+    Отобразить список работников
     """""
-    # Проверить что список людей не пуст
-    if humans:
-        # Заголовок таблицы.
+    # Проверить что список работников не пуст
+    if staff:
+        # Заголовок таблицы
         line = '+-{}-+-{}-+-{}-+-{}-+'.format(
-            '-' * 4,
-            '-' * 30,
-            '-' * 20,
-            '-' * 15
-        )
+                '-' * 4,
+                '-' * 30,
+                '-' * 20,
+                '-' * 8
+            )
         print(line)
         print(
-            '| {:^4} | {:^30} | {:^20} | {:^15} |'.format(
+            '| {:^4} | {:^30} | {:^20} | {:^8} |'.format(
                 "№",
-                "Фамилия и имя",
-                "Знак Зодиака",
-                "Дата рождения"
+                "Ф.И.О.",
+                "Должность",
+                "Год"
             )
         )
         print(line)
 
-        # Вывести данные о всех.
-        for idx, worker in enumerate(humans, 1):
-            date = worker.get('date', '')
+        # Вывести данные о всех сотрудниках
+        for idx, worker in enumerate(staff, 1):
             print(
-                '| {:^4} | {:<14} {:<15} | {:<20} | {}{} |'.format(
+                '| {:>4} | {:<30} | {:<20} | {:>8} |'.format(
                     idx,
-                    worker.get('surname', ''),
                     worker.get('name', ''),
-                    worker.get('zodiak', ''),
-                    date,
-                    ' ' * 5
+                    worker.get('post', ''),
+                    worker.get('year', 0)
                 )
             )
-
-        print(line)
+            print(line)
 
     else:
         print("Список работников пуст.")
 
 
-def select_humans(humans, addedzz):
+def select_workers(staff, period):
     """""
-    Выбрать людей с заданным ЗЗ
+    Выбрать работников с заданным стажем
     """""
-    # Инициализировать счетчик.
-    count = 0
-    # Сформировать список людей
+    # Получить текущую дату
+    today = date.today()
+    # Сформировать список работников
     result = []
-    # Проверить сведения людей из списка.
-    for human in humans:
-        if human.get('zodiak', '') == addedzz:
-            count += 1
-            result.append(human)
+    for employee in staff:
+        if today.year - employee.get('year', today.year) >= period:
+            result.append(employee)
 
+    # Возвратить список выбранных работников
     return result
 
 
@@ -90,9 +81,8 @@ def main():
     """""
     Главная функция программы
     """""
-    print("help - список всех команд")
-    # Список людей.
-    humans = []
+    # Список работников
+    workers = []
 
     # Организовать бесконечный цикл запроса команд
     while True:
@@ -102,28 +92,27 @@ def main():
             break
 
         elif command == 'add':
-            human = get_human()
-            # Добавить словарь в список.
-            humans.append(human)
-            # Отсортировать список в случае необходимости.
-            if len(humans) > 1:
-                humans.sort(key=lambda item: item.get('date', ''))
+            worker = get_worker()
+            workers.append(worker)
+
+            if len(workers) > 1:
+                workers.sort(key=lambda item: item.get('name', ''))
 
         elif command == 'list':
-            display_human(humans)
+            display_worker(workers)
 
         elif command.startswith('select '):
             parts = command.split(' ', maxsplit=1)
-            addedzz = int(parts[1])
-            selected = select_humans(humans, addedzz)
-            display_human(selected)
+            period = int(parts[1])
+            selected = select_workers(workers, period)
+            display_worker(selected)
 
         elif command == 'help':
-            # Вывести справку о работе с программой.
             print("Список команд:\n")
-            print("add - добавить человека;")
-            print("list - вывести список людей;")
-            print("help - список всех команд;")
+            print("add - добавить работника;")
+            print("list - вывести список работников;")
+            print("select <стаж> - запросить работников со стажем;")
+            print("help - вывести список команд;")
             print("exit - завершить работу с программой.")
 
         else:

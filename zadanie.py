@@ -2,133 +2,107 @@
 # _*_ coding: utf-8 _*_
 
 import sys
-import datetime
 
 
-def get_human():
-    """""
-    Запросить данные о человеке.
-    """""
-    # Запросить данные о человеке.
-    surname = input("Фамилия: ")
-    name = input("Имя: ")
-    zodiak = input("Знак Зодиака: ")
-    date_str = input("Введите дату выпуска (dd/mm/yyyy)\n")
-    date = datetime.datetime.strptime(date_str, '%d/%m/%Y').date()
+def show_commands():
+    print("Список команд:\n")
+    print("add - добавить студента;")
+    print("list - вывести список студентов;")
+    print("select <средний балл> - запросить студентов с баллом выше 4.0;")
+    print("exit - завершить работу с программой.")
 
-    # Вернуть словарь.
-    return {
-        'surname': surname,
+
+def add_student():
+    # Запросить данные о студенте.
+    name = input("Фамилия и инициалы? ")
+    group = input("Номер группы? ")
+    grade = str(input('Успеваемость: '))
+    # Создать словарь.
+    student = {
         'name': name,
-        'zodiak': zodiak,
-        'date': date
+        'group': group,
+        'grade': grade,
     }
+    # Добавить словарь в список.
+    students.append(student)
+    # Отсортировать список в случае необходимости.
+    if len(students) > 1:
+        students.sort(key=lambda item: item.get('group')[::-1])
 
 
-def display_human(humans):
-    """""
-    Отобразить список людей
-    """""
-    # Проверить что список людей не пуст
-    if humans:
-        # Заголовок таблицы.
-        line = '+-{}-+-{}-+-{}-+-{}-+'.format(
-            '-' * 4,
-            '-' * 30,
-            '-' * 20,
-            '-' * 15
+def show_list():
+    # Заголовок таблицы.
+    line = '+-{}-+-{}-+-{}-+-{}-+'.format(
+        '-' * 4,
+        '-' * 30,
+        '-' * 20,
+        '-' * 15
+    )
+    print(line)
+    print(
+        '| {:^4} | {:^30} | {:^20} | {:^15} |'.format(
+            "№",
+            "Ф.И.О.",
+            "Группа",
+            "Успеваемость"
         )
-        print(line)
+    )
+    print(line)
+    # Вывести данные о всех студентах.
+    for idx, student in enumerate(students, 1):
         print(
-            '| {:^4} | {:^30} | {:^20} | {:^15} |'.format(
-                "№",
-                "Фамилия и имя",
-                "Знак Зодиака",
-                "Дата рождения"
+            '| {:>4} | {:<30} | {:<20} | {:>15} |'.format(
+                idx,
+                student.get('name', ''),
+                student.get('group', ''),
+                student.get('grade', 0)
             )
         )
-        print(line)
-
-        # Вывести данные о всех.
-        for idx, worker in enumerate(humans, 1):
-            date = worker.get('date', '')
-            print(
-                '| {:^4} | {:<14} {:<15} | {:<20} | {}{} |'.format(
-                    idx,
-                    worker.get('surname', ''),
-                    worker.get('name', ''),
-                    worker.get('zodiak', ''),
-                    date,
-                    ' ' * 5
-                )
-            )
-
-        print(line)
-
-    else:
-        print("Список работников пуст.")
+    print(line)
 
 
-def select_humans(humans, addedzz):
-    """""
-    Выбрать людей с заданным ЗЗ
-    """""
+def show_selected():
     # Инициализировать счетчик.
     count = 0
-    # Сформировать список людей
-    result = []
-    # Проверить сведения людей из списка.
-    for human in humans:
-        if human.get('zodiak', '') == addedzz:
+    # Проверить сведения студентов из списка.
+    for student in students:
+        grade = list(map(int, student.get('grade', '').split()))
+        if sum(grade) / max(len(grade), 1) >= 4.0:
+            print(
+                '{:>4} {}'.format('*', student.get('name', '')),
+                '{:>1} {}'.format('группа №', student.get('group', ''))
+            )
             count += 1
-            result.append(human)
-
-    return result
+    if count == 0:
+        print("Студенты с баллом 4.0 и выше не найдены.")
 
 
 def main():
-    """""
-    Главная функция программы
-    """""
-    print("help - список всех команд")
-    # Список людей.
-    humans = []
-
-    # Организовать бесконечный цикл запроса команд
+    # Организовать бесконечный цикл запроса команд.
     while True:
+        # Запросить команду из терминала.
         command = input(">>> ").lower()
 
+        # Выполнить действие в соответствие с командой.
         if command == 'exit':
             break
 
         elif command == 'add':
-            human = get_human()
-            # Добавить словарь в список.
-            humans.append(human)
-            # Отсортировать список в случае необходимости.
-            if len(humans) > 1:
-                humans.sort(key=lambda item: item.get('date', ''))
+            add_student()
 
         elif command == 'list':
-            display_human(humans)
+            show_list()
 
-        elif command.startswith('select '):
-            parts = command.split(' ', maxsplit=1)
-            addedzz = int(parts[1])
-            selected = select_humans(humans, addedzz)
-            display_human(selected)
-
-        elif command == 'help':
-            # Вывести справку о работе с программой.
-            print("Список команд:\n")
-            print("add - добавить человека;")
-            print("list - вывести список людей;")
-            print("help - список всех команд;")
-            print("exit - завершить работу с программой.")
+        elif command.startswith('select'):
+            show_selected()
 
         else:
-            print(f"Неизвестная комманда {command}", file=sys.stderr)
+            print(f"Неизвестная команда {command}", file=sys.stderr)
 
 
 if __name__ == '__main__':
+    # Список студентов.
+    students = []
+    show_commands()
+
     main()
